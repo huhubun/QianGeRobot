@@ -1,0 +1,31 @@
+﻿@model QianGeRobot.Web.Models.Home.SendMessageModel
+@{
+    ViewData["Title"] = "SendMessage";
+}
+
+<h1>SendMessage</h1>
+
+<form asp-action="SendMessage">
+    <input asp-for="Content" />
+
+    <input type="checkbox" asp-for="AtAll" />
+    <label asp-for="AtAll">@@All</label>
+
+    <button name="Type" value="SendText" class="btn btn-sm btn-primary">Send</button>
+
+    <hr />
+
+    <button name="Type" value="SendNotCompletedInDevDeadlineTicketMessage" class="btn btn-sm btn-outline-primary">发送超时未完成的 Ticket 通知</button>
+    <button name="Type" value="SendTodayShouldCompletedTicketsMessage" class="btn btn-sm btn-outline-primary">发送今天需要完成的的 Ticket 通知</button>
+    <button name="Type" value="SendCompletionOfMonthMessage" class="btn btn-sm btn-outline-primary">发送截至今日 Ticket 完成情况汇总</button>
+
+    <hr />
+
+    <div>
+        <select asp-for="Year" asp-items="Model.YearSelectList"></select> 年
+        <select asp-for="Month" asp-items="Model.MonthSelectList"></select> 月
+    </div>
+
+    <button name="Type" value="SendCompletionOfMonthMessageByMonth" class="btn btn-sm btn-outline-primary">发送按月 Ticket 完成情况汇总</button>
+
+</form>
