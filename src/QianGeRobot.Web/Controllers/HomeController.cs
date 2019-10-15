@@ -55,6 +55,10 @@ namespace QianGeRobot.Web.Controllers
                     _qianGeService.SendTodayShouldCompletedTicketsMessage();
                     break;
 
+                case "SendTodayShouldStartTicketsMessage":
+                    _qianGeService.SendTodayShouldStartTicketsMessage();
+                    break;
+
                 case "SendCompletionOfMonthMessage":
                     _qianGeService.SendCompletionOfMonthMessage();
                     break;
@@ -81,7 +85,7 @@ namespace QianGeRobot.Web.Controllers
             var currentDate = DateTime.Now;
 
             var tickets = _tracService.GetMonthlyTickets(currentDate.Year, currentDate.Month);
-            var peopleDic = GetPeoples().ToDictionary(p => p.Username);
+            var peopleDic = GetConfiguredPeoples().ToDictionary(p => p.Username);
 
             var schedules = tickets.Select(t => new Schedule
             {
@@ -101,8 +105,8 @@ namespace QianGeRobot.Web.Controllers
 
         public IActionResult GetCalendars()
         {
-            var peoples = GetPeoples();
-            
+            var peoples = GetConfiguredPeoples();
+
             var calendars = new List<Calendar>();
 
             foreach (var people in peoples)
@@ -122,7 +126,12 @@ namespace QianGeRobot.Web.Controllers
             return Json(calendars);
         }
 
-        private List<PeopleConfig> GetPeoples()
+        public IActionResult GetPeoples()
+        {
+            return Json(GetConfiguredPeoples());
+        }
+
+        private List<PeopleConfig> GetConfiguredPeoples()
         {
             return _qianGeConfigs.Peoples.Select((p, index) => new PeopleConfig
             {

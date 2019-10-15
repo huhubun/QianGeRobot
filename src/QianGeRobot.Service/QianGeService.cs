@@ -23,7 +23,7 @@ namespace QianGeRobot.Services
             _tracService = tracService;
             _dingTalkService = dingTalkService;
         }
-
+        
         public void SendNotCompletedInDevDeadlineTicketsMessage()
         {
             var currentDate = DateTime.Now.Date;
@@ -117,6 +117,52 @@ namespace QianGeRobot.Services
             _dingTalkService.SendMarkdown("今天需要完成的 Ticket 通知", messageString, atList);
         }
 
+        public void SendTodayShouldStartTicketsMessage()
+        {
+            var currentDate = DateTime.Now.Date;
+
+            var peoples = _configs.Peoples.ToDictionary(p => p.Username);
+
+            var todayShouldCompletedTickets = GetTodayShouldStartTickets(currentDate);
+
+            var atList = new List<string>();
+
+            var message = new StringBuilder();
+            message.AppendLine("# 今天开始开发的 Ticket 通知");
+
+            foreach (var todayShouldCompletedTicketsGroup in todayShouldCompletedTickets.GroupBy(t => t.Owner))
+            {
+                var tracUsername = todayShouldCompletedTicketsGroup.Key;
+                var atPeople = tracUsername;
+
+                if (peoples.ContainsKey(tracUsername))
+                {
+                    var people = peoples[tracUsername];
+
+                    atList.Add(people.Mobile);
+
+                    atPeople = $"@{people.Mobile}";
+                }
+
+                message.AppendLine($"## {atPeople} ");
+
+                foreach (var unfinishedDevTicket in todayShouldCompletedTicketsGroup)
+                {
+                    var ticketLink = $"[#{unfinishedDevTicket.TicketId} {unfinishedDevTicket.Summary}]({_configs.Trac.Url}/ticket/{unfinishedDevTicket.TicketId})";
+
+                    message.AppendLine($"- {ticketLink}  ");
+                }
+
+                message.AppendLine();
+            }
+
+            message.AppendLine("以上 Ticket 计划于今天开始开发，开发完成后请及时更新 Ticket 状态，遇到问题及时沟通，谢谢");
+
+            var messageString = message.ToString();
+
+            _dingTalkService.SendMarkdown("今天开始开发的 Ticket 通知", messageString, atList);
+        }
+
         public void SendCompletionOfMonthMessage(DateTime? date = null)
         {
             var queryDate = DateTime.Now.Date;
@@ -174,5 +220,17 @@ namespace QianGeRobot.Services
             return todayShouldCompletedTickets;
         }
 
+        private List<TracQueryResultItem> GetTodayShouldStartTickets(DateTime currentDate)
+        {
+            var tickets = _tracService.GetMonthlyTickets(currentDate.Year, currentDate.Month);
+
+            var todayShouldCompletedTickets = tickets.Where(t => t.Confirmed == TracConst.CONFIRMED_TO_MODIFY)
+                        .Where(t => TracConst.DevOkStatus.Contains(t.Status) == false)
+                        .Where(t => t.Startdate.HasValue)
+                        .Where(t => (t.Startdate.Value - currentDate).Days == 0)
+                        .ToList();
+
+            return todayShouldCompletedTickets;
+        }
     }
 }
