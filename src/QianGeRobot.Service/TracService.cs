@@ -35,7 +35,7 @@ namespace QianGeRobot.Services
 
             var deadline4devQueryString = $"{year}-{month.ToString().PadLeft(2, '0')}";
 
-            var url = $"{_configs.Trac.Url}/query?owner=bill.nong&owner=aaron.wang&owner=shawn.xia&owner=andy.sui&owner=garen.nan&owner=nick.sui&owner=young.yang&owner=vayne.xi&owner=seal.yang&owner=blake.dong&owner=augus.liu&deadline4dev=%5E{deadline4devQueryString}&format=csv&max=1000&col=id&col=summary&col=deadline4dev&col=owner&col=type&col=status&col=time&col=confirmed&col=deadline&col=hotel&col=reporter&col=startdate&order=summary";
+            var url = $"{_configs.Trac.Url}/query?owner=bill.nong&owner=aaron.wang&owner=shawn.xia&owner=andy.sui&owner=garen.nan&owner=nick.sui&owner=young.yang&owner=vayne.xi&owner=seal.yang&owner=blake.dong&owner=augus.liu&owner=sinawle.yin&owner=waldron.liu&deadline4dev=%5E{deadline4devQueryString}&format=csv&max=1000&col=id&col=summary&col=deadline4dev&col=owner&col=type&col=status&col=time&col=confirmed&col=deadline&col=hotel&col=reporter&col=startdate&order=summary";
             var request = CreateRequest(url);
 
             var response = request.GetResponse();

@@ -34,8 +34,8 @@ namespace QianGeRobot.Core
                 yield return new Calendar
                 {
                     Color = "#FFF",
-                    BgColor = "#667782",
-                    BorderColor = "#667782"
+                    BgColor = "#DB7093",
+                    BorderColor = "#DB7093"
                 };
 
                 yield return new Calendar
@@ -97,10 +97,16 @@ namespace QianGeRobot.Core
                 yield return new Calendar
                 {
                     Color = "#FFF",
+                    BgColor = "#5F9EA0",
+                    BorderColor = "#5F9EA0"
+                };
+
+                yield return new Calendar
+                {
+                    Color = "#FFF",
                     BgColor = "#F1AB86",
                     BorderColor = "#F1AB86"
                 };
-
             }
         }
     }

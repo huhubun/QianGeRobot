@@ -6,21 +6,88 @@
 <html>
 <head>
     <title>Qian Ge Robot Web</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        .overview-area {
+            position: fixed;
+            top: 0;
+            height: 48px;
+            width: 100%;
+            z-index: 9999;
+            padding: 10px;
+            background-color: #FFF;
+            box-shadow: 0px 2px 12px 5px #CCC;
+        }
+
+
+        .people-overview-box {
+            display: inline-block;
+            margin-right: 16px;
+            text-align: center;
+            min-width: 4em;
+        }
+
+            .people-overview-box .developer-status {
+                width: 12px;
+                height: 12px;
+                display: inline-block;
+                border-radius: 100%;
+                background-color: darkseagreen;
+            }
+
+            .people-overview-box .developer-name, .people-overview-box .developer-color {
+                display: inline-block;
+                width: 100%;
+            }
+
+            .people-overview-box .developer-color {
+                color: #FFF;
+                margin-top: 6px;
+            }
+
+        .developer-status-busy {
+            background-color: indianred !important;
+        }
+
+        .calendar-area {
+            padding-top: 108px;
+        }
+    </style>
 </head>
 <body>
     <div id="app">
-        <calendar style="height: 5000px"
-                  :view="view"
-                  :task-view="taskView"
-                  :schedule-view="scheduleView"
-                  :calendars="calendarList"
-                  :schedules="scheduleList"
-                  :is-readOnly="isReadOnly"
-                  :disable-dbl-click="disableDblClick"
-                  :disable-click="disableClick"
-                  :usage-statistics="usageStatistics"
-                  :template="template"
-                  :month="month" />
+        <div class="overview-area">
+            <div>
+                <div class="people-overview-box" v-for="p in peoples">
+                    @*<span v-if="getTodayScheduleByPeopleId(p.id).length > 0" class="people-busy"></span>
+                        <span v-else class="people-not-busy"></span>*@
+                    <span class="developer-name">
+                        <span class="developer-status" v-bind:class="{ 'developer-status-busy': getTodayScheduleByPeopleId(p.id).length > 0 }"></span>
+                        {{ p.name }}
+                    </span>
+                    <span class="developer-color" v-bind:style="{ backgroundColor: getCalendarByPeopleId(p.id).bgColor }">{{ getScheduleByPeopleId(p.id).length }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="calendar-area">
+            <calendar style="height: 5000px;"
+                      ref="tuiCalendar"
+                      :view="view"
+                      :task-view="taskView"
+                      :schedule-view="scheduleView"
+                      :calendars="calendarList"
+                      :schedules="scheduleList"
+                      :is-readOnly="isReadOnly"
+                      :disable-dbl-click="disableDblClick"
+                      :disable-click="disableClick"
+                      :usage-statistics="usageStatistics"
+                      :template="template"
+                      :month="month" />
+        </div>
     </div>
     <link rel="stylesheet" type="text/css" href="https://uicdn.toast.com/tui-calendar/latest/tui-calendar.css" />
 
@@ -32,8 +99,8 @@
     <script src="https://unpkg.com/@@toast-ui/vue-calendar@1.1.0/dist/toastui-vue-calendar.js"></script>
 
     <script>
-        var calendars = null,
-            schedules = null;
+        var calendars = null;
+        var schedules = null;
 
         $.ajax({
             url: '@Url.Action("GetSchedules")',
@@ -52,7 +119,7 @@
             method: 'GET',
             success: function (data) {
                 calendars = data;
-
+                
                 if (schedules) {
                     initVue();
                 }
@@ -61,35 +128,89 @@
 
         function initVue() {
             var app = new Vue({
-            el: '#app',
-            data: function () {
-                return {
-                    view: 'month',
-                    taskView: ['task'],
-                    scheduleView: false,
-                    calendarList: calendars,
-                    scheduleList: schedules,
-                    isReadOnly: false,
-                    disableDblClick: true,
-                    usageStatistics: false,
-                    disableClick: true,
-                    template: {
-
-                    },
-                    month: {
-                        startDayOfWeek: 1,
-                        narrowWeekend: true,
-                        visibleScheduleCount: 50
+                el: '#app',
+                data: function () {
+                    return {
+                        view: 'month',
+                        taskView: ['task'],
+                        scheduleView: false,
+                        calendarList: calendars,
+                        scheduleList: schedules,
+                        isReadOnly: false,
+                        disableDblClick: true,
+                        usageStatistics: false,
+                        disableClick: true,
+                        template: {
+                        },
+                        month: {
+                            startDayOfWeek: 1,
+                            narrowWeekend: true,
+                            visibleScheduleCount: 50
+                        },
+                        peoples: []
                     }
+                },
+                methods: {
+                    getPeoples() {
+                        $.ajax({
+                            url: '@Url.Action("GetPeoples")',
+                            method: 'GET',
+                            success: function (data) {
+                                app.peoples = data
+                            }
+                        });
+                    },
+                    getScheduleByPeopleId(id) {
+                        var calanderId = id.toString()
+
+                        var result = this.scheduleList.filter(function (value, index) {
+                            return value.calendarId === calanderId
+                        })
+
+                        return result
+                    },
+                    getTodayScheduleByPeopleId(id) {
+                        var result = this.getScheduleByPeopleId(id).filter(function (value, index) {
+
+                            var now = new Date();
+
+                            return app.isDateInRange(new Date(now.getFullYear(), now.getMonth(), now.getDate()), new Date(value.start), new Date(value.end))
+                        })
+
+                        return result
+                    },
+                    getPeopleById(id) {
+                        var peoples = this.peoples.filter(function (value, index) {
+                            return value.id === id
+                        })
+
+                        return peoples[0];
+                    },
+                    getCalendarByPeopleId(id) {
+                        var calanderId = id.toString()
+
+                        var result = this.calendarList.filter(function (value, index) {
+                            return value.id === calanderId
+                        })
+
+                        return result[0];
+                    },
+                    isDateInRange(date, start, end) {
+                        return (start <= date) && (date <= end)
+                    }
+                },
+                computed: {
+
+                },
+                components: {
+                    calendar: toastui.Calendar
+                },
+                mounted() {
+                    this.getPeoples()
                 }
-            },
-            methods: {
-            },
-            components: {
-                calendar: toastui.Calendar
-            }
-        })
+            })
         }
+
     </script>
 </body>
 </html>
