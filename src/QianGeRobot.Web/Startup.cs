@@ -71,6 +71,12 @@ namespace QianGeRobot.Web
             app.UseStaticFiles();
             app.UseCookiePolicy();
 
+            app.Use((context, next) =>
+            {
+                context.Request.PathBase = new PathString("/qiange");
+                return next();
+            });
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
